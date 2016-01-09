@@ -1,0 +1,9 @@
+.diagram {
+    width: 800px;
+    font-family: "FreeSerif";
+    font-size: 150%;
+    margin: 5%auto;
+}
+.word:hover {
+    background: #eee;
+}
