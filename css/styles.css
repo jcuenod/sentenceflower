@@ -1,9 +1,23 @@
+body {
+    background: url("../flower.svg") fixed no-repeat bottom right;
+}
 .diagram {
+    position: absolute;
     width: 800px;
     font-family: "FreeSerif";
     font-size: 150%;
-    margin: 5%auto;
+    margin: 5% calc(50% - 400px);
+    background-image: linear-gradient(90deg, transparent 29px, #e8e8e8 1px);
+    background-size: 30px 30px;
+    border-left: 1px solid #e8e8e8;
 }
 .word:hover {
     background: #eee;
+}
+
+v-r {
+    position: absolute;
+    height: 100%;
+    width: 20px;
+    display: inline-block;
 }
