@@ -4,6 +4,7 @@ var sentenceDepth = 0;
 var initIndent = 0;
 var treeDiagram = null;
 var $diagram = null;
+var dragTarget = null;
 
 $(document).ready(function(){
     $diagram = $(".diagram");
@@ -38,8 +39,9 @@ $(document).on("paste", function(e){
     domControlAddClause(this);
 }).on("draginit", ".sentence", function( ev, dd ){
     initIndent = parseInt($(this).css("paddingLeft"), 10);
+    dragTarget = ev.currentTarget;
 }).on("drag", ".sentence", function( ev, dd ){
-    $(this).css({ paddingLeft: initIndent + Math.round( dd.offsetX / 30 ) * 30 });
+    $(dragTarget).css({ paddingLeft: initIndent + Math.round( dd.offsetX / 30 ) * 30 });
 });
 
 function labelLine($clause)
@@ -63,7 +65,6 @@ function labelLine($clause)
     if ($clause.next("[data-line-name]").length === 0)
     {
         $clause.nextUntil("[data-line-name]").each(function(i, el){
-            console.log(i);
             $(el).attr("data-line-index", String.fromCharCode(97 + thisIndex + i + 1 - indexOffset));
         });
     }
@@ -101,5 +102,4 @@ function domControlAddClause(that)
 
         treeDiagram.splitClause(clauseIndex, elementIndex);
     }
-    console.log(treeDiagram);
 }
