@@ -11,8 +11,10 @@ Diagram.prototype.splitClause = function (clauseIndex, elementIndex) {
 Diagram.prototype.mergeClauseBackward = function(clauseIndex)  {
     if (clauseIndex <= 0)
         return false;
-    this.clauses[clauseIndex - 1].appendToClause(this.clauses[clauseIndex]);
+    console.log(this.clauses[clauseIndex - 1]);
+    this.clauses[clauseIndex - 1].appendClauseToClause(this.clauses[clauseIndex]);
     this.clauses.splice(clauseIndex, 1);
+    console.log(this.clauses[clauseIndex - 1]);
 };
 
 
@@ -25,10 +27,10 @@ function Clause (clauseElements) {
 }
 
 Clause.prototype.splitClause = function (index) {
-    return [this.elements.slice(0,index), this.elements.slice(index)];
+    return [new Clause(this.elements.slice(0,index)), new Clause (this.elements.slice(index))];
 };
-Clause.prototype.appendToClause = function (newElements) {
-    this.elements.concat(newElements);
+Clause.prototype.appendClauseToClause = function (clauseToAppend) {
+    this.elements = this.elements.concat(clauseToAppend.elements);
 };
 Clause.prototype.setIndentLevel = function (newIndentLevel) {
     this.indentLevel = indentLevel;

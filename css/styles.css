@@ -1,23 +1,59 @@
 body {
     background: url("../flower.svg") fixed no-repeat bottom right;
 }
+sup {
+    vertical-align: super;
+    font-size: .6em;
+}
 .diagram {
     position: absolute;
     width: 800px;
     font-family: "FreeSerif";
-    font-size: 150%;
+    font-size: 130%;
+    color: #333;
+    line-height: 1.428;
     margin: 5% calc(50% - 400px);
     background-image: linear-gradient(90deg, transparent 29px, #e8e8e8 1px);
     background-size: 30px 30px;
     border-left: 1px solid #e8e8e8;
 }
-.word:hover {
-    background: #eee;
+.sentence {
+    margin-bottom: 10px;
+    border-left: 2px solid transparent;
+    transition: border 200ms;
+    padding-left: 3px;
+    margin-left: -3px;
 }
-
-v-r {
-    position: absolute;
-    height: 100%;
-    width: 20px;
-    display: inline-block;
+.sentence:hover {
+    border-color: rgba(61, 70, 91, 0.5);
+}
+.sentence::before {
+     content: attr(data-line-name) attr(data-line-index);
+     left: -50px;
+     width: 40px;
+     position: absolute;
+     text-align: right;
+}
+.word {
+    position: relative;
+    z-index: 1;
+    cursor: pointer;
+}
+.word::before {
+    position:absolute;
+    content:"";
+    display:none;
+    width: calc(100% + 6px - 0.2em);
+    height: calc(100% + 1px);
+    top: 0px;
+    left: -3px;
+    background: rgba(61, 70, 91, 0.5);
+    z-index: -1;
+    border-radius: 2px;
+}
+.word:hover::before {
+    display: block;
+}
+.word:hover {
+    color: #eee;
 }
