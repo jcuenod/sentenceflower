@@ -16,12 +16,16 @@ Diagram.prototype.mergeClauseBackward = function(clauseIndex)  {
     this.clauses.splice(clauseIndex, 1);
     console.log(this.clauses[clauseIndex - 1]);
 };
+Diagram.prototype.setTreeParent = function (clauseIndex, parentIndex) {
+    this.clauses[clauseIndex].treeParent = this.clauses[parentIndex];
+};
 
 
 
 function Clause (clauseElements) {
     this.elements = clauseElements;
     this.indentLevel = 0;
+    this.treeParent = null;
     this.parent = null;
     this.children = [];
 }
