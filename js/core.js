@@ -47,6 +47,7 @@ var coordinateReasonList = [{
 $(document).ready(function(){
     $diagram = $(".diagram");
     $(".reasonInput").selectivity({
+        showSearchInputInDropdown: false,
         items: subordinateReasonList,
         placeholder: 'Reason'
     });
@@ -140,6 +141,7 @@ function showReasonPicker(e)
     var height = $(".reasonPicker").outerHeight();
     $(".reasonPicker").css({ left: e.clientX - width/2, top: e.clientY - height /2 });
     $(".reasonPicker").addClass("showPicker");
+    $(".reasonInput").selectivity("open");
 }
 
 function labelLine($clause)
