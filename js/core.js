@@ -283,3 +283,46 @@ function findPossibleRelationships($sentence) {
     }
     return possibleParents;
 }
+
+
+function save(clauseName)
+{
+    var toStore = [{
+        clauseName: clauseName,
+        clauses: []
+    }];
+    $(".sentence").each(function(){
+        var t = $(this);
+        var d = {
+            text: t.html(),
+            lineName: t.attr("data-line-name"),
+            lineIndex: t.attr("data-line-index"),
+            indentLevel: (parseInt(t.css("paddingLeft")) - 3) / 30,
+            reason: t.attr("data-reason"),
+            parent: t.attr("data-parent")
+        };
+        // if (typeof toStore.clauses == "undefined")
+        //     toStore.clauses = [];
+        toStore[0].clauses.push(d);
+    });
+    localStorage.setItem('dataCollection', JSON.stringify(toStore));
+}
+
+function restore(clauseName)
+{
+    var dataCollection = JSON.parse( localStorage.getItem('dataCollection') );
+    var elementPos = dataCollection.map(function(x) {return x.clauseName; }).indexOf(clauseName);
+    if (elementPos == -1)
+        return;
+    $diagram.empty();
+    dataCollection[elementPos].clauses.forEach(function(clause){
+        var p = $("<p>").addClass("sentence")
+        .html(clause.text)
+        .css("paddingLeft", clause.indentLevel * 30 + 3)
+        .attr("data-line-name", clause.lineName)
+        .attr("data-line-index", clause.lineIndex)
+        .attr("data-reason", clause.reason)
+        .attr("data-parent", clause.parent);
+        $diagram.append(p);
+    });
+}
