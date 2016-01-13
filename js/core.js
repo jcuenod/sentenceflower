@@ -1,5 +1,7 @@
 var isIe = (navigator.userAgent.toLowerCase().indexOf("msie") != -1 || navigator.userAgent.toLowerCase().indexOf("trident") != -1);
 
+var documentTimer;
+var documentName = "";
 var sentenceDepth = 0;
 var initIndent = 0;
 var treeDiagram = null;
@@ -51,6 +53,26 @@ $(document).ready(function(){
         items: subordinateReasonList,
         placeholder: 'Reason'
     });
+    $('li.load').hover(
+        function () {
+            var $loadopt = $(".loadoption");
+            if ($loadopt.length === 0)
+            {
+                var dataCollection = JSON.parse( localStorage.getItem('dataCollection') );
+                var $options = $("<ul>").addClass("loadoption");
+                dataCollection.map(function(x) {
+                    $("<li>").appendTo($options).append($("<a href=#>").text(x.diagramName));
+                });
+                $(this).append($options.css({marginTop: 10, opacity: 0}));
+            }
+            $('ul', this).show();
+            $('ul', this).stop().animate({marginTop: 3, opacity: 1}, 100);
+        },
+        function () {
+            $('ul', this).stop().animate({marginTop: 10, opacity: 0}, 100, "swing", function(){ $(this).hide(); });
+        }
+    );
+    autoSave();
 });
 
 function pasteThings(things)
@@ -63,6 +85,8 @@ function pasteThings(things)
     $diagram.empty().append(paragraph);
     labelLine(paragraph);
     treeDiagram = new Diagram($(".word").toArray());
+    documentName = window.prompt("please choose a name for this document (it will be autosaved)");
+    save();
 }
 $(document).on("paste", function(e){
     var textFromClipboard = "";
@@ -78,6 +102,8 @@ $(document).on("paste", function(e){
     domControlRemoveClause(this);
     e.preventDefault();
     return false;
+}).on("click", ".loadoption a", function(e){
+    restore($(this).text());
 }).on("click", ".anchor a", function(e){
     $anchorAssociation.attr("data-parent", $(this).text());
     showReasonPicker(e);
@@ -285,12 +311,17 @@ function findPossibleRelationships($sentence) {
 }
 
 
-function save(clauseName)
+function save()
 {
-    var toStore = [{
-        clauseName: clauseName,
+    if (documentName === "")
+        return;
+    var dataCollection = JSON.parse( localStorage.getItem('dataCollection') );
+    var elementPos = dataCollection.map(function(x) {return x.diagramName; }).indexOf(documentName);
+
+    var toStore = {
+        diagramName: documentName,
         clauses: []
-    }];
+    };
     $(".sentence").each(function(){
         var t = $(this);
         var d = {
@@ -303,15 +334,16 @@ function save(clauseName)
         };
         // if (typeof toStore.clauses == "undefined")
         //     toStore.clauses = [];
-        toStore[0].clauses.push(d);
+        toStore.clauses.push(d);
     });
-    localStorage.setItem('dataCollection', JSON.stringify(toStore));
+    dataCollection[elementPos] = toStore;
+    localStorage.setItem('dataCollection', JSON.stringify(dataCollection));
 }
 
-function restore(clauseName)
+function restore(diagramName)
 {
     var dataCollection = JSON.parse( localStorage.getItem('dataCollection') );
-    var elementPos = dataCollection.map(function(x) {return x.clauseName; }).indexOf(clauseName);
+    var elementPos = dataCollection.map(function(x) {return x.diagramName; }).indexOf(diagramName);
     if (elementPos == -1)
         return;
     $diagram.empty();
@@ -325,4 +357,15 @@ function restore(clauseName)
         .attr("data-parent", clause.parent);
         $diagram.append(p);
     });
+    treeDiagram = new Diagram($(".word").toArray());
+    documentName = diagramName;
+}
+
+function autoSave()
+{
+    save();
+    window.clearTimeout(documentTimer);
+    documentTimer = window.setTimeout(function(){
+        autoSave();
+    }, 5000);
 }

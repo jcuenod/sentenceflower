@@ -1,5 +1,54 @@
 /*csslint fallback-colors:false, box-model:false*/
 
+.mainmenu ul {
+    display: block;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #292520;
+    font-family: "FreeSerif";
+}
+.mainmenu > ul > li {
+    display: inline-block;
+    border-right: 1px solid #665f57;
+    padding: 0;
+    margin: 0;
+}
+.mainmenu > ul > li > a {
+    display: inline-block;
+    padding: 0.5em 0;
+    color: #b3aba2;
+    width: 10em;
+    text-align: center;
+    text-decoration: none;
+}
+.mainmenu > ul > li > a:hover {
+    color: #d0c68e;
+    background-color: #1a1814;
+}
+
+.mainmenu ul li ul {
+    box-sizing: border-box;
+    position: absolute;
+    z-index: 5;
+    top: 2em;
+    width: 9em;
+    margin: 0.5em;
+}
+.mainmenu ul li ul li a {
+    display: inline-block;
+    padding: 0.5em 0;
+    color: #292520;
+    width: 100%;
+    text-align: center;
+    text-decoration: none;
+}
+.mainmenu ul li ul li a:hover {
+    background-color: #d0c68e;
+    color: #3d465b;
+}
+
+
 
 body {
     background: url("../flower.svg") fixed no-repeat bottom right;
@@ -173,4 +222,37 @@ sup {
     content: "\21D2";
     font-weight: bold;
     color: red;
+}
+
+
+
+
+/* arrows */
+.mainmenu ul li ul {
+	/*position: relative;*/
+	background: #b3aba2;
+	border: 2px solid #665f57;
+}
+.mainmenu ul li ul:after, .mainmenu ul li ul:before {
+	bottom: 100%;
+	left: 50%;
+	border: solid transparent;
+	content: " ";
+	height: 0;
+	width: 0;
+	position: absolute;
+	pointer-events: none;
+}
+
+.mainmenu ul li ul:after {
+	border-color: rgba(179, 171, 162, 0);
+	border-bottom-color: #b3aba2;
+	border-width: 5px;
+	margin-left: -5px;
+}
+.mainmenu ul li ul:before {
+	border-color: rgba(102, 95, 87, 0);
+	border-bottom-color: #665f57;
+	border-width: 8px;
+	margin-left: -8px;
 }
