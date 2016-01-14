@@ -363,7 +363,14 @@ function save()
         toStore.clauses.push(d);
     });
 
-    var elementPos = dataCollection !== null ? dataCollection.map(function(x) {return x.diagramName; }).indexOf(documentName) : -1;
+    var elementPos = -1;
+    if (dataCollection === null)
+    {
+        dataCollection = [];
+    }
+    else {
+        elementPos = dataCollection.map(function(x) {return x.diagramName; }).indexOf(documentName);
+    }
     if (elementPos > -1)
         dataCollection[elementPos] = toStore;
     else
