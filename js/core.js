@@ -59,9 +59,16 @@ $(document).ready(function(){
             if ($loadopt.length === 0)
             {
                 var dataCollection = JSON.parse( localStorage.getItem('dataCollection') );
+                if (dataCollection === null)
+                    return;
                 var $options = $("<ul>").addClass("loadoption");
+                var options = [];
                 dataCollection.map(function(x) {
-                    $("<li>").appendTo($options).append($("<a href=#>").text(x.diagramName));
+                    options.push(x.diagramName);
+                });
+                options.sort();
+                options.forEach(function(x){
+                    $("<li>").appendTo($options).append($("<a href=#>").text(x));
                 });
                 $(this).append($options.css({marginTop: 10, opacity: 0}));
             }
@@ -85,8 +92,20 @@ function pasteThings(things)
     $diagram.empty().append(paragraph);
     labelLine(paragraph);
     treeDiagram = new Diagram($(".word").toArray());
-    documentName = window.prompt("please choose a name for this document (it will be autosaved)");
-    save();
+
+    $.MessageBox({
+        input    : true,
+        message  : "Please choose a name for this document (it will be autosaved)"
+    }).done(function(data){
+        var trimmedData = $.trim(data);
+        if (trimmedData) {
+            documentName = trimmedData;
+            save();
+            $(".loadoption").remove();
+        } else {
+            $.MessageBox("Okay, that's problematic...\nYou're only causing issues for yourself you know");
+        }
+    });
 }
 $(document).on("paste", function(e){
     var textFromClipboard = "";
@@ -106,7 +125,10 @@ $(document).on("paste", function(e){
     restore($(this).text());
 }).on("click", ".anchor a", function(e){
     $anchorAssociation.attr("data-parent", $(this).text());
-    showReasonPicker(e);
+    var reasonsToUse = subordinateReasonList;
+    if ($anchorAssociation.css("paddingLeft") == getSentenceFromName($(this).text()).css("paddingLeft"))
+        reasonsToUse = coordinateReasonList;
+    showReasonPicker(e, reasonsToUse);
 }).on("click", ".word", function(){
     domControlAddClause(this);
 }).on("dragstart", ".sentence", function( ev, dd ){
@@ -119,6 +141,7 @@ $(document).on("paste", function(e){
 }).on("dragend", ".sentence", function(){
     dragTarget = null;
     repositionAnchor($(this));
+    autoSave();
 }).on("mouseenter", ".sentence", function(){
     repositionAnchor($(this));
 }).on("mouseenter", ".anchor", function(){
@@ -141,6 +164,7 @@ $(document).on("paste", function(e){
     $(".reasonPicker").removeClass("showPicker");
 }).on("selectivity-selected", ".reasonInput", function(e){
     $anchorAssociation.attr("data-reason", e.item.text);
+    autoSave();
 });
 
 function repositionAnchor($sentence)
@@ -160,8 +184,9 @@ function repositionAnchor($sentence)
     $anchorAssociation = $sentence;
 }
 
-function showReasonPicker(e)
+function showReasonPicker(e, reasons)
 {
+    $(".reasonInput").selectivity("setOptions", {items: reasons});
     //TODO: show coordinateReasonList when appropriate
     var width = $(".reasonPicker").outerWidth();
     var height = $(".reasonPicker").outerHeight();
@@ -212,6 +237,7 @@ function domControlRemoveClause(that)
         currentP.remove();
         labelLine(targetP.next());
     }
+    autoSave();
 }
 function domControlAddClause(that)
 {
@@ -228,6 +254,7 @@ function domControlAddClause(that)
 
         treeDiagram.splitClause(clauseIndex, elementIndex);
     }
+    autoSave();
 }
 
 function getNameFromSentence($sentence)
@@ -316,7 +343,6 @@ function save()
     if (documentName === "")
         return;
     var dataCollection = JSON.parse( localStorage.getItem('dataCollection') );
-    var elementPos = dataCollection.map(function(x) {return x.diagramName; }).indexOf(documentName);
 
     var toStore = {
         diagramName: documentName,
@@ -336,7 +362,12 @@ function save()
         //     toStore.clauses = [];
         toStore.clauses.push(d);
     });
-    dataCollection[elementPos] = toStore;
+
+    var elementPos = dataCollection.map(function(x) {return x.diagramName; }).indexOf(documentName);
+    if (elementPos > -1)
+        dataCollection[elementPos] = toStore;
+    else
+        dataCollection.push(toStore);
     localStorage.setItem('dataCollection', JSON.stringify(dataCollection));
 }
 
@@ -363,9 +394,8 @@ function restore(diagramName)
 
 function autoSave()
 {
-    save();
     window.clearTimeout(documentTimer);
     documentTimer = window.setTimeout(function(){
-        autoSave();
-    }, 5000);
+        save();
+    }, 500);
 }
