@@ -55,22 +55,10 @@ $(document).ready(function(){
     });
     $('li.load').hover(
         function () {
-            var $loadopt = $(".loadoption");
-            if ($loadopt.length === 0)
+            var $loadmenu = $(".loadmenu");
+            if ($loadmenu.length === 0)
             {
-                var dataCollection = JSON.parse( localStorage.getItem('dataCollection') );
-                if (dataCollection === null)
-                    return;
-                var $options = $("<ul>").addClass("loadoption");
-                var options = [];
-                dataCollection.map(function(x) {
-                    options.push(x.diagramName);
-                });
-                options.sort();
-                options.forEach(function(x){
-                    $("<li>").appendTo($options).append($("<a href=#>").text(x));
-                });
-                $(this).append($options.css({marginTop: 10, opacity: 0}));
+                refreshMenu();
             }
             $('ul', this).show();
             $('ul', this).stop().animate({marginTop: 3, opacity: 1}, 100);
@@ -82,6 +70,29 @@ $(document).ready(function(){
     $(".anchor").hide();
     autoSave();
 });
+
+function refreshMenu()
+{
+    var $loadmenu = $(".loadmenu");
+    if ($loadmenu.length !== 0)
+    {
+        $loadmenu.remove();
+    }
+    var $menuParent = $('li.load');
+    var dataCollection = JSON.parse( localStorage.getItem('dataCollection') );
+    if (dataCollection === null)
+        return;
+    var $options = $("<ul>").addClass("loadmenu");
+    var options = [];
+    dataCollection.map(function(x) {
+        options.push(x.diagramName);
+    });
+    options.sort();
+    options.forEach(function(x){
+        $("<li>").appendTo($options).append($("<a href=#load>").text(x).addClass("load_button")).append($("<a href=#delete>").addClass("delete_button").data("associatedDiagramName", x));
+    });
+    $menuParent.append($options.css({marginTop: 10, opacity: 0}));
+}
 
 function pasteThings(things)
 {
@@ -102,7 +113,7 @@ function pasteThings(things)
         if (trimmedData) {
             documentName = trimmedData;
             save();
-            $(".loadoption").remove();
+            $(".loadmenu").remove();
         } else {
             $.MessageBox("Okay, that's problematic...\nYou're only causing issues for yourself you know");
         }
@@ -122,8 +133,10 @@ $(document).on("paste", function(e){
     domControlRemoveClause(this);
     e.preventDefault();
     return false;
-}).on("click", ".loadoption a", function(e){
+}).on("click", ".load_button", function(e){
     restore($(this).text());
+}).on("click", ".delete_button", function(e){
+    unsave($(this).data("associatedDiagramName"));
 }).on("click", ".anchor a", function(e){
     $anchorAssociation.attr("data-parent", $(this).text());
     var reasonsToUse = subordinateReasonList;
@@ -338,6 +351,21 @@ function findPossibleRelationships($sentence) {
     return possibleParents;
 }
 
+function unsave(diagramName)
+{
+    //TODO: if loaded load something else or return to default paste instruction
+    $.MessageBox({
+        buttonDone  : "Yes",
+        buttonFail  : "No",
+        message     : "Are you sure you want to delete " + diagramName + "?"
+    }).done(function(){
+        var dataCollection = JSON.parse( localStorage.getItem('dataCollection') );
+        var indexToRemove = dataCollection.map(function(x) {return x.diagramName; }).indexOf(diagramName);
+        dataCollection.splice(indexToRemove, 1);
+        localStorage.setItem('dataCollection', JSON.stringify(dataCollection));
+        refreshMenu();
+    });
+}
 
 function save()
 {
@@ -386,6 +414,7 @@ function restore(diagramName)
     if (elementPos == -1)
         return;
     $diagram.empty();
+    $(".anchor").hide();
     dataCollection[elementPos].clauses.forEach(function(clause){
         var p = $("<p>").addClass("sentence")
         .html(clause.text)

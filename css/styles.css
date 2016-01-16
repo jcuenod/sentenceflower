@@ -36,18 +36,38 @@
     margin: 0.5em;
 }
 .mainmenu ul li ul li a {
-    display: inline-block;
-    padding: 0.5em 0;
+    line-height: 1.8em !important;
     color: #052131;
-    width: 100%;
-    text-align: center;
     text-decoration: none;
+    vertical-align: top
 }
 .mainmenu ul li ul li a:hover {
     background-color: #beb5a9;
     color: #005892;
 }
 
+.load_button {
+    display: inline-block;
+    width: calc(85% - 0.6em);
+    padding: 0 0.3em;
+    text-align: left;
+}
+.delete_button::before {
+    width: calc(15% - 0.4em);
+    padding: 0 0.2em;
+    display: inline-block;
+    content: "\00232B";
+    color: #a33;
+    height: 100%;
+    top: 0;
+    font-weight: bold;
+    font-size: 50%;
+    text-align: center;
+}
+.delete_button:hover::before {
+    background: #a33;
+    color: #fff;
+}
 
 
 body {
@@ -221,7 +241,7 @@ sup {
 
 .highlightParent {
     color: #005892;
-    background-color: #eee;
+    background-color: rgba(240,240,240, 0.6);
 }
 .highlightParent::before {
     content: "\21D2";
