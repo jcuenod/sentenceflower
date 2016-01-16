@@ -79,6 +79,7 @@ $(document).ready(function(){
             $('ul', this).stop().animate({marginTop: 10, opacity: 0}, 100, "swing", function(){ $(this).hide(); });
         }
     );
+    $(".anchor").hide();
     autoSave();
 });
 

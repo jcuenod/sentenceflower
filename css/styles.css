@@ -73,13 +73,13 @@ sup {
     position: relative;
     margin-bottom: 0.2em;
     border-left: 2px solid transparent;
-    transition: border 200ms;
     padding-left: 3px;
     margin-left: -3px;
 }
 .sentence:hover {
     border-color: rgba(61, 70, 91, 0.5);
-    background-color: #f0f0f0;
+    background-color: rgba(240,240,240, 0.6);
+    transition: border 200ms, background 200ms;
 }
 .sentence::before {
     top: 2px;
