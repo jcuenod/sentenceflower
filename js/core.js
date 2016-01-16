@@ -46,7 +46,8 @@ var coordinateReasonList = [{
     ]
 }];
 
-$(document).ready(function(){
+
+$(document).on("ready", function(){
     $diagram = $(".diagram");
     $(".reasonInput").selectivity({
         showSearchInputInDropdown: false,
@@ -69,7 +70,68 @@ $(document).ready(function(){
     );
     $(".anchor").hide();
     autoSave();
+}).on("paste", function(e){
+    var textFromClipboard = "";
+    if (isIe) {
+        textFromClipboard = window.clipboardData.getData('Text');
+    } else {
+        textFromClipboard = e.originalEvent.clipboardData.getData('text/plain');
+    }
+    if (true)//confirm('paste?'))
+        pasteThings(textFromClipboard);
+    e.preventDefault();
+}).on("contextmenu", ".word", function (e) {
+    domControlRemoveClause(this);
+    e.preventDefault();
+    return false;
+}).on("click", ".load_button", function(e){
+    restore($(this).text());
+}).on("click", ".delete_button", function(e){
+    unsave($(this).data("associatedDiagramName"), refreshMenu);
+}).on("click", ".anchor a", function(e){
+    $anchorAssociation.attr("data-parent", $(this).text());
+    var reasonsToUse = subordinateReasonList;
+    if ($anchorAssociation.css("paddingLeft") == getSentenceFromName($(this).text()).css("paddingLeft"))
+        reasonsToUse = coordinateReasonList;
+    showReasonPicker(e, reasonsToUse);
+}).on("click", ".word", function(){
+    domControlAddClause(this);
+}).on("dragstart", ".sentence", function( ev, dd ){
+    initIndent = parseInt($(this).css("paddingLeft"), 10);
+    dragTarget = ev.currentTarget;
+    $(".anchor").hide();
+}).on("drag", ".sentence", function( ev, dd ){
+    $(dragTarget).css({ paddingLeft: initIndent + Math.round( dd.offsetX / 30 ) * 30 });
+    repositionAnchor($(this));
+}).on("dragend", ".sentence", function(){
+    dragTarget = null;
+    repositionAnchor($(this));
+    autoSave();
+}).on("mouseenter", ".sentence", function(){
+    repositionAnchor($(this));
+}).on("mouseenter", ".anchor", function(){
+    var possibleAnchors = findPossibleRelationships($anchorAssociation);
+    var $sentences = $(".sentence");
+    var $ul = $(".anchor ul").empty();
+    possibleAnchors.forEach(function(pA) {
+        $ul.append(
+            $("<li>").append(
+                $("<a href=# class='anchorSelect'>").text(getNameFromSentence($($sentences.get(pA))))
+            )
+        );
+    });
+}).on("mouseenter", ".anchorSelect", function(){
+    $(".highlightParent").removeClass("highlightParent");
+    getSentenceFromName($(this).text()).addClass("highlightParent");
+}).on("mouseleave", ".anchorSelect", function(){
+    $(".highlightParent").removeClass("highlightParent");
+}).on("selectivity-close", ".reasonInput", function(){
+    $(".reasonPicker").removeClass("showPicker");
+}).on("selectivity-selected", ".reasonInput", function(e){
+    $anchorAssociation.attr("data-reason", e.item.text);
+    autoSave();
 });
+
 
 function refreshMenu()
 {
@@ -119,67 +181,6 @@ function pasteThings(things)
         }
     });
 }
-$(document).on("paste", function(e){
-    var textFromClipboard = "";
-    if (isIe) {
-        textFromClipboard = window.clipboardData.getData('Text');
-    } else {
-        textFromClipboard = e.originalEvent.clipboardData.getData('text/plain');
-    }
-    if (true)//confirm('paste?'))
-        pasteThings(textFromClipboard);
-    e.preventDefault();
-}).on("contextmenu", ".word", function (e) {
-    domControlRemoveClause(this);
-    e.preventDefault();
-    return false;
-}).on("click", ".load_button", function(e){
-    restore($(this).text());
-}).on("click", ".delete_button", function(e){
-    unsave($(this).data("associatedDiagramName"));
-}).on("click", ".anchor a", function(e){
-    $anchorAssociation.attr("data-parent", $(this).text());
-    var reasonsToUse = subordinateReasonList;
-    if ($anchorAssociation.css("paddingLeft") == getSentenceFromName($(this).text()).css("paddingLeft"))
-        reasonsToUse = coordinateReasonList;
-    showReasonPicker(e, reasonsToUse);
-}).on("click", ".word", function(){
-    domControlAddClause(this);
-}).on("dragstart", ".sentence", function( ev, dd ){
-    initIndent = parseInt($(this).css("paddingLeft"), 10);
-    dragTarget = ev.currentTarget;
-    $(".anchor").hide();
-}).on("drag", ".sentence", function( ev, dd ){
-    $(dragTarget).css({ paddingLeft: initIndent + Math.round( dd.offsetX / 30 ) * 30 });
-    repositionAnchor($(this));
-}).on("dragend", ".sentence", function(){
-    dragTarget = null;
-    repositionAnchor($(this));
-    autoSave();
-}).on("mouseenter", ".sentence", function(){
-    repositionAnchor($(this));
-}).on("mouseenter", ".anchor", function(){
-    var possibleAnchors = findPossibleRelationships($anchorAssociation);
-    var $sentences = $(".sentence");
-    var $ul = $(".anchor ul").empty();
-    possibleAnchors.forEach(function(pA) {
-        $ul.append(
-            $("<li>").append(
-                $("<a href=# class='anchorSelect'>").text(getNameFromSentence($($sentences.get(pA))))
-            )
-        );
-    });
-}).on("mouseenter", ".anchorSelect", function(){
-    $(".highlightParent").removeClass("highlightParent");
-    getSentenceFromName($(this).text()).addClass("highlightParent");
-}).on("mouseleave", ".anchorSelect", function(){
-    $(".highlightParent").removeClass("highlightParent");
-}).on("selectivity-close", ".reasonInput", function(){
-    $(".reasonPicker").removeClass("showPicker");
-}).on("selectivity-selected", ".reasonInput", function(e){
-    $anchorAssociation.attr("data-reason", e.item.text);
-    autoSave();
-});
 
 function repositionAnchor($sentence)
 {
@@ -349,90 +350,4 @@ function findPossibleRelationships($sentence) {
             possibleParents.push(lookADirection(nextDirection)[0]);
     }
     return possibleParents;
-}
-
-function unsave(diagramName)
-{
-    //TODO: if loaded load something else or return to default paste instruction
-    $.MessageBox({
-        buttonDone  : "Yes",
-        buttonFail  : "No",
-        message     : "Are you sure you want to delete " + diagramName + "?"
-    }).done(function(){
-        var dataCollection = JSON.parse( localStorage.getItem('dataCollection') );
-        var indexToRemove = dataCollection.map(function(x) {return x.diagramName; }).indexOf(diagramName);
-        dataCollection.splice(indexToRemove, 1);
-        localStorage.setItem('dataCollection', JSON.stringify(dataCollection));
-        refreshMenu();
-    });
-}
-
-function save()
-{
-    if (documentName === "")
-        return;
-    var dataCollection = JSON.parse( localStorage.getItem('dataCollection') );
-
-    var toStore = {
-        diagramName: documentName,
-        clauses: []
-    };
-    $(".sentence").each(function(){
-        var t = $(this);
-        var d = {
-            text: t.html(),
-            lineName: t.attr("data-line-name"),
-            lineIndex: t.attr("data-line-index"),
-            indentLevel: (parseInt(t.css("paddingLeft")) - 3) / 30,
-            reason: t.attr("data-reason"),
-            parent: t.attr("data-parent")
-        };
-        // if (typeof toStore.clauses == "undefined")
-        //     toStore.clauses = [];
-        toStore.clauses.push(d);
-    });
-
-    var elementPos = -1;
-    if (dataCollection === null)
-    {
-        dataCollection = [];
-    }
-    else {
-        elementPos = dataCollection.map(function(x) {return x.diagramName; }).indexOf(documentName);
-    }
-    if (elementPos > -1)
-        dataCollection[elementPos] = toStore;
-    else
-        dataCollection.push(toStore);
-    localStorage.setItem('dataCollection', JSON.stringify(dataCollection));
-}
-
-function restore(diagramName)
-{
-    var dataCollection = JSON.parse( localStorage.getItem('dataCollection') );
-    var elementPos = dataCollection.map(function(x) {return x.diagramName; }).indexOf(diagramName);
-    if (elementPos == -1)
-        return;
-    $diagram.empty();
-    $(".anchor").hide();
-    dataCollection[elementPos].clauses.forEach(function(clause){
-        var p = $("<p>").addClass("sentence")
-        .html(clause.text)
-        .css("paddingLeft", clause.indentLevel * 30 + 3)
-        .attr("data-line-name", clause.lineName)
-        .attr("data-line-index", clause.lineIndex)
-        .attr("data-reason", clause.reason)
-        .attr("data-parent", clause.parent);
-        $diagram.append(p);
-    });
-    treeDiagram = new Diagram($(".word").toArray());
-    documentName = diagramName;
-}
-
-function autoSave()
-{
-    window.clearTimeout(documentTimer);
-    documentTimer = window.setTimeout(function(){
-        save();
-    }, 500);
 }
